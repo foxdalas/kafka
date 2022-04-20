@@ -5,6 +5,11 @@ ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y curl gnupg dirmngr ca-certificates netcat-openbsd --no-install-recommends
 
+ARG jmx_prometheus_version="0.16.1"
+
+RUN mkdir -p /opt/jmx-exporter; \
+	curl -o /opt/jmx-exporter/jmx_prometheus_httpserver.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/$jmx_prometheus_version/jmx_prometheus_httpserver-$jmx_prometheus_version-jar-with-dependencies.jar
+
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl"; \
 	curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl.sha256"; \
 	echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check ;\
@@ -25,6 +30,7 @@ RUN curl -f -sLS -o KEYS https://www.apache.org/dist/kafka/KEYS; \
   		apt-get purge -y --auto-remove curl gnupg dirmngr; \
   		rm -rf /var/lib/apt/lists; \
   		rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt /root/.gnupg
+
 
 
 WORKDIR /opt/kafka
