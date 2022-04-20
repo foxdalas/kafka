@@ -1,8 +1,17 @@
 FROM openjdk:17-slim-buster
 
 ENV KAFKA_VERSION=3.1.0 SCALA_VERSION=2.13
+ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y curl gnupg dirmngr ca-certificates netcat-openbsd --no-install-recommends
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl"; \
+	curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl.sha256"; \
+	echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check ;\
+	rm kubectl.sha256; \
+	mv kubectl /usr/bin/; \
+	chmod +x /usr/bin/kubectl
+
 RUN curl -f -sLS -o KEYS https://www.apache.org/dist/kafka/KEYS; \
 		gpg --import KEYS && rm KEYS; \
 		SCALA_BINARY_VERSION=$(echo $SCALA_VERSION | cut -f 1-2 -d '.'); \
@@ -17,7 +26,8 @@ RUN curl -f -sLS -o KEYS https://www.apache.org/dist/kafka/KEYS; \
   		rm -rf /var/lib/apt/lists; \
   		rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt /root/.gnupg
 
- WORKDIR /opt/kafka
+
+WORKDIR /opt/kafka
 
 COPY docker-help.sh /usr/local/bin/docker-help
 ENTRYPOINT ["docker-help"]
