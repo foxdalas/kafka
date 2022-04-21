@@ -8,7 +8,10 @@ RUN apt-get update && apt-get install -y curl gnupg dirmngr ca-certificates netc
 ARG jmx_prometheus_version="0.16.1"
 
 RUN mkdir -p /opt/jmx-exporter; \
-	curl -o /opt/jmx-exporter/jmx_prometheus_httpserver.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/$jmx_prometheus_version/jmx_prometheus_httpserver-$jmx_prometheus_version-jar-with-dependencies.jar
+	curl -o /opt/jmx-exporter/jmx_prometheus_httpserver.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/$jmx_prometheus_version/jmx_prometheus_httpserver-$jmx_prometheus_version-jar-with-dependencies.jar; \
+	curl -o /opt/jmx-exporter/jmx_prometheus_javaagent.jar  https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/$jmx_prometheus_version/jmx_prometheus_javaagent-$jmx_prometheus_version.jar
+
+
 
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl"; \
 	curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl.sha256"; \
