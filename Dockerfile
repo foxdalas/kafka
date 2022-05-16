@@ -14,7 +14,7 @@ RUN mv /build/cruise-control/cruise-control-metrics-reporter/build/libs/cruise-c
 
 FROM openjdk:17-slim-buster
 
-ENV KAFKA_VERSION=3.1.0 SCALA_VERSION=2.13
+ENV KAFKA_VERSION=3.1.1 SCALA_VERSION=2.13
 ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y curl gnupg dirmngr ca-certificates netcat-openbsd --no-install-recommends
