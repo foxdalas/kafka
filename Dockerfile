@@ -1,3 +1,17 @@
+FROM openjdk:17-slim-buster AS build
+
+ENV CRUISE_CONTROL_VERSION=2.5.92
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y git
+RUN git clone https://github.com/linkedin/cruise-control.git && \
+		cd cruise-control && \
+		git checkout $CRUISE_CONTROL_VERSION && \
+		./gradlew jar
+RUN mv /build/cruise-control/cruise-control-metrics-reporter/build/libs/cruise-control-metrics-reporter-$CRUISE_CONTROL_VERSION.jar /build/cruise-control-metrics-reporter.jar 
+ 
+
 FROM openjdk:17-slim-buster
 
 ENV KAFKA_VERSION=3.1.0 SCALA_VERSION=2.13
@@ -38,5 +52,7 @@ RUN curl -f -sLS -o KEYS https://www.apache.org/dist/kafka/KEYS; \
 
 WORKDIR /opt/kafka
 
+COPY --from=build /build/cruise-control-metrics-reporter.jar /opt/kafka/libs/
 COPY docker-help.sh /usr/local/bin/docker-help
+
 ENTRYPOINT ["docker-help"]
