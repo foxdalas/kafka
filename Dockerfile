@@ -1,6 +1,6 @@
 FROM openjdk:17-slim-buster AS build
 
-ENV CRUISE_CONTROL_VERSION=2.5.110
+ENV CRUISE_CONTROL_VERSION=2.5.111
 
 WORKDIR /build
 
@@ -14,12 +14,12 @@ RUN mv /build/cruise-control/cruise-control-metrics-reporter/build/libs/cruise-c
 
 FROM openjdk:17-slim-buster
 
-ENV KAFKA_VERSION=3.3.1 SCALA_VERSION=2.13
+ENV KAFKA_VERSION=3.3.2 SCALA_VERSION=2.13
 ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y curl gnupg dirmngr ca-certificates netcat-openbsd --no-install-recommends
 
-ARG jmx_prometheus_version="0.16.1"
+ARG jmx_prometheus_version="0.17.2"
 
 RUN mkdir -p /opt/jmx-exporter; \
 	curl -o /opt/jmx-exporter/jmx_prometheus_httpserver.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/$jmx_prometheus_version/jmx_prometheus_httpserver-$jmx_prometheus_version-jar-with-dependencies.jar; \
