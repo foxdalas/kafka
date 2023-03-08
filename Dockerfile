@@ -1,6 +1,6 @@
 FROM openjdk:17-slim-buster AS build
 
-ENV CRUISE_CONTROL_VERSION=2.5.111
+ENV CRUISE_CONTROL_VERSION=2.5.113
 
 WORKDIR /build
 
@@ -14,17 +14,17 @@ RUN mv /build/cruise-control/cruise-control-metrics-reporter/build/libs/cruise-c
 
 FROM openjdk:17-slim-buster
 
-ENV KAFKA_VERSION=3.3.2 SCALA_VERSION=2.13
+ENV KAFKA_VERSION=3.4.0 SCALA_VERSION=2.13 KAFKA_KUBERNETES_CONFIG_PROVIDER=1.1.0 JMX_PROMETHEUS=0.17.2
+
+
 ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y curl gnupg dirmngr ca-certificates netcat-openbsd --no-install-recommends
 
-ARG jmx_prometheus_version="0.17.2"
 
 RUN mkdir -p /opt/jmx-exporter; \
-	curl -o /opt/jmx-exporter/jmx_prometheus_httpserver.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/$jmx_prometheus_version/jmx_prometheus_httpserver-$jmx_prometheus_version.jar; \
-	curl -o /opt/jmx-exporter/jmx_prometheus_javaagent.jar  https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/$jmx_prometheus_version/jmx_prometheus_javaagent-$jmx_prometheus_version.jar
-
+	curl -o /opt/jmx-exporter/jmx_prometheus_httpserver.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_httpserver/$JMX_PROMETHEUS/jmx_prometheus_httpserver-$JMX_PROMETHEUS.jar; \
+	curl -o /opt/jmx-exporter/jmx_prometheus_javaagent.jar  https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/$JMX_PROMETHEUS/jmx_prometheus_javaagent-$JMX_PROMETHEUS.jar
 
 
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl"; \
@@ -43,12 +43,17 @@ RUN curl -f -sLS -o KEYS https://www.apache.org/dist/kafka/KEYS; \
   		gpg --verify kafka_$SCALA_BINARY_VERSION-$KAFKA_VERSION.tgz.asc kafka_$SCALA_BINARY_VERSION-$KAFKA_VERSION.tgz; \
   		tar xzf kafka_$SCALA_BINARY_VERSION-$KAFKA_VERSION.tgz --strip-components=1 -C /opt/kafka; \
   		rm kafka_$SCALA_BINARY_VERSION-$KAFKA_VERSION.tgz; \
-  		rm -rf /opt/kafka/site-docs; \
-  		apt-get purge -y --auto-remove curl gnupg dirmngr; \
-  		rm -rf /var/lib/apt/lists; \
-  		rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt /root/.gnupg
+  		rm -rf /opt/kafka/site-docs
 
+RUN mkdir -p /opt/kafka-config-provider; \
+    curl -f -sLS -o /opt/kafka-config-provider/kafka-kubernetes-config-provider-$KAFKA_KUBERNETES_CONFIG_PROVIDER.tar.gz https://github.com/strimzi/kafka-kubernetes-config-provider/releases/download/$KAFKA_KUBERNETES_CONFIG_PROVIDER/kafka-kubernetes-config-provider-$KAFKA_KUBERNETES_CONFIG_PROVIDER.tar.gz; \
+    tar xzf /opt/kafka-config-provider/kafka-kubernetes-config-provider-$KAFKA_KUBERNETES_CONFIG_PROVIDER.tar.gz --strip-components=1 -C /opt/kafka-config-provider; \
+    cp -R /opt/kafka-config-provider/libs/* /opt/kafka/libs/; \
+    rm -rf /opt/kafka-config-provider
 
+RUN apt-get purge -y --auto-remove curl gnupg dirmngr; \
+	rm -rf /var/lib/apt/lists; \
+	rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt /root/.gnupg
 
 WORKDIR /opt/kafka
 
