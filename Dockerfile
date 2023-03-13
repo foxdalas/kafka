@@ -14,7 +14,7 @@ RUN mv /build/cruise-control/cruise-control-metrics-reporter/build/libs/cruise-c
 
 FROM openjdk:17-slim-buster
 
-ENV KAFKA_VERSION=3.4.0 SCALA_VERSION=2.13 KAFKA_KUBERNETES_CONFIG_PROVIDER=1.1.0 JMX_PROMETHEUS=0.17.2
+ENV KAFKA_VERSION=3.4.0 SCALA_VERSION=2.13 KAFKA_FS_JCA=0.0.2 JMX_PROMETHEUS=0.17.2
 
 
 ARG TARGETARCH
@@ -45,11 +45,8 @@ RUN curl -f -sLS -o KEYS https://www.apache.org/dist/kafka/KEYS; \
   		rm kafka_$SCALA_BINARY_VERSION-$KAFKA_VERSION.tgz; \
   		rm -rf /opt/kafka/site-docs
 
-RUN mkdir -p /opt/kafka-config-provider; \
-    curl -f -sLS -o /opt/kafka-config-provider/kafka-kubernetes-config-provider-$KAFKA_KUBERNETES_CONFIG_PROVIDER.tar.gz https://github.com/strimzi/kafka-kubernetes-config-provider/releases/download/$KAFKA_KUBERNETES_CONFIG_PROVIDER/kafka-kubernetes-config-provider-$KAFKA_KUBERNETES_CONFIG_PROVIDER.tar.gz; \
-    tar xzf /opt/kafka-config-provider/kafka-kubernetes-config-provider-$KAFKA_KUBERNETES_CONFIG_PROVIDER.tar.gz --strip-components=1 -C /opt/kafka-config-provider; \
-    cp -R /opt/kafka-config-provider/libs/* /opt/kafka/libs/; \
-    rm -rf /opt/kafka-config-provider
+
+RUN curl -f -sLS -o /opt/kafka/libs/kafka-fs-jca-current.jar https://github.com/tufitko/kafka-fs-jca/releases/download/v$KAFKA_FS_JCA/kafka-fs-jca-current.jar
 
 RUN apt-get purge -y --auto-remove curl gnupg dirmngr; \
 	rm -rf /var/lib/apt/lists; \
